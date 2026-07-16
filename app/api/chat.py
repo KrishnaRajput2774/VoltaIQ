@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, HTTPException
 from app.schemas import ChatQueryInput, ChatQueryResponse
-from app.agent.fleet_advisor import fleet_advisor
+from app.agent.graph import run_query
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/chat", tags=["AI Fleet Advisor"])
              responses={500: {"model": ChatQueryResponse}})
 async def query_fleet_advisor(payload: ChatQueryInput) -> ChatQueryResponse:
     """
-    Query the LangChain AI Fleet Advisor to get insights about battery telemetry,
+    Query the LangGraph AI Fleet Advisor to get insights about battery telemetry,
     readiness schedules, carbon footprint offsets, or charging station proximity.
     """
     if not payload.message.strip():
@@ -21,8 +21,8 @@ async def query_fleet_advisor(payload: ChatQueryInput) -> ChatQueryResponse:
         )
         
     try:
-        # Run query through LangChain Advisor Agent
-        result = fleet_advisor.run_query(
+        # Run query through LangGraph Fleet Advisor
+        result = run_query(
             user_message=payload.message,
             chat_history=payload.chat_history
         )
@@ -36,3 +36,4 @@ async def query_fleet_advisor(payload: ChatQueryInput) -> ChatQueryResponse:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while compiling your fleet query. Please check your data logs."
         )
+

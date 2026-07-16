@@ -45,6 +45,14 @@ section[data-testid="stSidebar"] {
     background: #0D1526 !important;
     border-right: 1px solid #1E2D45 !important;
     min-width: 260px !important;
+    width: 260px !important;
+    /* Lock sidebar open — prevent Streamlit from collapsing it */
+    transform: none !important;
+    margin-left: 0 !important;
+    left: 0 !important;
+    visibility: visible !important;
+    display: flex !important;
+    position: relative !important;
 }
 
 section[data-testid="stSidebar"] > div {
@@ -917,8 +925,8 @@ label, .stLabel, [data-testid="stWidgetLabel"] {
 /* ---------- HIDE STREAMLIT BRANDING ---------- */
 #MainMenu { visibility: hidden; }
 footer { visibility: hidden; }
-header[data-testid="stHeader"] { display: none; }
-[data-testid="collapsedControl"] { display: none; }
+header[data-testid="stHeader"] { display: none !important; }
+[data-testid="collapsedControl"] { display: none !important; }
 .stDeployButton { display: none !important; }
 
 /* ---------- SKELETON LOADER ---------- */

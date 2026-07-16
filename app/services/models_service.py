@@ -16,6 +16,8 @@ class ModelService:
     def __init__(self):
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         
+        logger.info("Base Dir Name: ", base_dir)
+        
         self.battery_soh_model_path = os.path.join(base_dir, "saved_models", "battery", "battery_soh_model.pkl")
         self.battery_rul_model_path = os.path.join(base_dir, "saved_models", "battery", "battery_rul_model.pkl")
         self.fleet_readiness_model_path = os.path.join(base_dir, "saved_models", "fleet", "fleet_readiness_model.pkl")

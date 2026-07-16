@@ -8,7 +8,7 @@ from typing import Optional, Dict, Any, List
 
 API_BASE_URL = "http://127.0.0.1:8000/api/v1"
 MAX_RETRIES = 3
-TIMEOUT_SECONDS = 3.0
+TIMEOUT_SECONDS = 30.0
 
 
 class APIClient:
