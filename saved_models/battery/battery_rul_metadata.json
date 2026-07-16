@@ -1,0 +1,169 @@
+{
+  "model_name": "battery_rul_model",
+  "model_version": "2.0.0",
+  "algorithm": "GradientBoosting",
+  "training_timestamp": "2026-07-14T18:15:47.137468+00:00",
+  "random_seed": 42,
+  "target": "Remaining_Useful_Life_Cycles",
+  "selected_features": [
+    "Cycle_Number",
+    "Voltage_V",
+    "Temperature_C",
+    "Capacity_Ah",
+    "Capacity_Fade_Pct",
+    "Voltage_Sag_V",
+    "Degradation_Rate",
+    "Cycle_Normalized",
+    "State_of_Health"
+  ],
+  "n_features": 9,
+  "leakage_analysis": {
+    "target": "Remaining_Useful_Life_Cycles",
+    "n_candidates": 10,
+    "n_safe": 9,
+    "n_excluded_total": 1,
+    "safe_features": [
+      "Cycle_Number",
+      "Voltage_V",
+      "Temperature_C",
+      "Capacity_Ah",
+      "Capacity_Fade_Pct",
+      "Voltage_Sag_V",
+      "Degradation_Rate",
+      "Cycle_Normalized",
+      "State_of_Health"
+    ],
+    "confirmed_leakage": [
+      "Is_End_of_Life"
+    ],
+    "high_correlation_risk": [],
+    "moderate_correlation": [],
+    "correlations": {
+      "Cycle_Number": -0.35534,
+      "Voltage_V": 0.368511,
+      "Temperature_C": 0.174537,
+      "Capacity_Ah": 0.448028,
+      "Capacity_Fade_Pct": -0.355878,
+      "Voltage_Sag_V": -0.133677,
+      "Degradation_Rate": -0.072173,
+      "Cycle_Normalized": -0.744519,
+      "State_of_Health": 0.355878,
+      "Is_End_of_Life": -0.417677
+    },
+    "high_corr_threshold": 0.98,
+    "moderate_corr_threshold": 0.9
+  },
+  "preprocessing_pipeline": {
+    "steps": [
+      {
+        "name": "DataCleaner",
+        "phase": 1,
+        "desc": "Phase 1 DataCleaner"
+      },
+      {
+        "name": "FeatureEngineer",
+        "phase": 1,
+        "desc": "Phase 1 FeatureEngineer"
+      },
+      {
+        "name": "StandardScaler",
+        "phase": 2,
+        "desc": "Z-score normalisation in Pipeline"
+      }
+    ],
+    "full_pipeline_saved": true,
+    "model_path": "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\saved_models\\battery\\battery_rul_model.pkl"
+  },
+  "split_strategy": "by_battery_id",
+  "split_rationale": "All cycles of one battery in exactly one split (prevents leakage)",
+  "train_batteries": 23,
+  "val_batteries": 5,
+  "test_batteries": 6,
+  "train_rows": 1119,
+  "val_rows": 179,
+  "test_rows": 117,
+  "evaluation_metrics": {
+    "model": "GradientBoosting",
+    "target": "Remaining_Useful_Life_Cycles",
+    "val_mae": 7.7432,
+    "val_rmse": 12.68594,
+    "val_r2": 0.62974,
+    "test_mae": 24.54261,
+    "test_rmse": 46.63486,
+    "test_r2": -0.42802,
+    "cv_mae_mean": 10.83799,
+    "cv_mae_std": 3.71845,
+    "cv_folds": 5,
+    "train_time_s": 0.72
+  },
+  "all_candidates": [
+    {
+      "model": "LinearRegression",
+      "target": "Remaining_Useful_Life_Cycles",
+      "val_mae": 31.08203,
+      "val_rmse": 38.32981,
+      "val_r2": -2.38014,
+      "test_mae": 32.09149,
+      "test_rmse": 49.32355,
+      "test_r2": -0.59743,
+      "cv_mae_mean": 27.14486,
+      "cv_mae_std": 10.28753,
+      "cv_folds": 5,
+      "train_time_s": 0.01
+    },
+    {
+      "model": "RandomForest",
+      "target": "Remaining_Useful_Life_Cycles",
+      "val_mae": 5.45371,
+      "val_rmse": 9.89356,
+      "val_r2": 0.7748,
+      "test_mae": 29.69591,
+      "test_rmse": 57.61781,
+      "test_r2": -1.17986,
+      "cv_mae_mean": 12.00816,
+      "cv_mae_std": 4.24017,
+      "cv_folds": 5,
+      "train_time_s": 0.25
+    },
+    {
+      "model": "GradientBoosting",
+      "target": "Remaining_Useful_Life_Cycles",
+      "val_mae": 7.7432,
+      "val_rmse": 12.68594,
+      "val_r2": 0.62974,
+      "test_mae": 24.54261,
+      "test_rmse": 46.63486,
+      "test_r2": -0.42802,
+      "cv_mae_mean": 10.83799,
+      "cv_mae_std": 3.71845,
+      "cv_folds": 5,
+      "train_time_s": 0.72
+    }
+  ],
+  "feature_importances": {
+    "Cycle_Number": 0.013906,
+    "Voltage_V": 0.657426,
+    "Temperature_C": 0.01572,
+    "Capacity_Ah": 0.109222,
+    "Capacity_Fade_Pct": 0.008203,
+    "Voltage_Sag_V": 0.005758,
+    "Degradation_Rate": 0.001543,
+    "Cycle_Normalized": 0.172733,
+    "State_of_Health": 0.015489
+  },
+  "evaluation_plots": [
+    "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\reports\\ml\\plots\\gradientboosting_remaining_useful_life_cycles_pred_vs_actual.png",
+    "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\reports\\ml\\plots\\gradientboosting_remaining_useful_life_cycles_residuals.png",
+    "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\reports\\ml\\plots\\gradientboosting_remaining_useful_life_cycles_error_dist.png",
+    "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\reports\\ml\\plots\\gradientboosting_remaining_useful_life_cycles_worst_predictions.png"
+  ],
+  "training_time_s": 3.73,
+  "dataset_version": {
+    "source": "datasets/battery/ev_battery_degradation.csv",
+    "rows": 1415,
+    "cols": 21,
+    "n_batteries": 34
+  },
+  "model_path": "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\saved_models\\battery\\battery_rul_model.pkl",
+  "meta_path": "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\saved_models\\battery\\battery_rul_metadata.json"
+}

@@ -1,0 +1,1991 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "VoltIQ",
+    "description": "VoltIQ is an enterprise-grade AI-powered fleet electrification and asset intelligence platform.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/fleet/summary": {
+      "get": {
+        "tags": [
+          "Fleet Electrification Readiness"
+        ],
+        "summary": "Get Fleet Readiness Summary",
+        "description": "Get a summary of the electrification readiness status of the entire fleet,\ndynamically calculated from the fleet_readiness dataset, along with sample recommendations.",
+        "operationId": "get_fleet_readiness_summary_api_fleet_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FleetSummaryOutput"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fleet/vehicle/{vehicle_id}": {
+      "get": {
+        "tags": [
+          "Fleet Electrification Readiness"
+        ],
+        "summary": "Get Vehicle Readiness",
+        "description": "Get detailed EV replacement feasibility for a specific fleet vehicle.",
+        "operationId": "get_vehicle_readiness_api_fleet_vehicle__vehicle_id__get",
+        "parameters": [
+          {
+            "name": "vehicle_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Vehicle Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FleetVehicleReadiness"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fleet/predict": {
+      "post": {
+        "tags": [
+          "Fleet Electrification Readiness"
+        ],
+        "summary": "Predict Fleet Readiness",
+        "description": "Predict EV readiness score and transition category for any vehicle given its\nmechanical and operational telemetry.",
+        "operationId": "predict_fleet_readiness_api_fleet_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FleetPredictInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FleetPredictOutput"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/battery/predict": {
+      "post": {
+        "tags": [
+          "Battery APM"
+        ],
+        "summary": "Predict Battery Health",
+        "description": "Predict State of Health (SOH) and Remaining Useful Life (RUL) of an EV battery\nbased on incoming cell telemetry metrics (Voltage, Cycle Number, Temp, Capacity).",
+        "operationId": "predict_battery_health_api_battery_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatteryTelemetryInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatteryPredictionOutput"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/battery/rul": {
+      "post": {
+        "tags": [
+          "Battery APM"
+        ],
+        "summary": "Predict Battery Rul",
+        "description": "Predict Remaining Useful Life (RUL) only, using State of Health as input feature.",
+        "operationId": "predict_battery_rul_api_battery_rul_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatteryRULInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatteryRULOutput"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/battery/health/{battery_id}": {
+      "get": {
+        "tags": [
+          "Battery APM"
+        ],
+        "summary": "Get Battery Health By Id",
+        "description": "Lookup a battery by ID in the database/dataset, extract the latest cycle telemetry,\nand predict SOH and RUL.",
+        "operationId": "get_battery_health_by_id_api_battery_health__battery_id__get",
+        "parameters": [
+          {
+            "name": "battery_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Battery Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatteryPredictionOutput"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/carbon/metrics": {
+      "get": {
+        "tags": [
+          "Carbon Intelligence Tracker"
+        ],
+        "summary": "Get Carbon Metrics",
+        "description": "Fetch cumulative carbon emissions, simulated EV offset projections,\nand fleet progress toward net-zero targets from fleet carbon data.",
+        "operationId": "get_carbon_metrics_api_carbon_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarbonFootprintOutput"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/carbon/analysis": {
+      "post": {
+        "tags": [
+          "Carbon Intelligence Tracker"
+        ],
+        "summary": "Analyze Vehicle Carbon",
+        "description": "Perform a comparative carbon emissions analysis for a specific vehicle (baseline vs EV scenario)\nover a custom annual distance and fuel type.",
+        "operationId": "analyze_vehicle_carbon_api_carbon_analysis_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CarbonAnalysisInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarbonAnalysisOutput"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/query": {
+      "post": {
+        "tags": [
+          "AI Fleet Advisor"
+        ],
+        "summary": "Query Fleet Advisor",
+        "description": "Query the AI Fleet Advisor to get insights about battery telemetry, \nreadiness schedules, or carbon calculations.",
+        "operationId": "query_fleet_advisor_api_chat_query_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatQueryInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatQueryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fleet/summary": {
+      "get": {
+        "tags": [
+          "Fleet Electrification Readiness"
+        ],
+        "summary": "Get Fleet Readiness Summary",
+        "description": "Get a summary of the electrification readiness status of the entire fleet,\ndynamically calculated from the fleet_readiness dataset, along with sample recommendations.",
+        "operationId": "get_fleet_readiness_summary_api_v1_fleet_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FleetSummaryOutput"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fleet/vehicle/{vehicle_id}": {
+      "get": {
+        "tags": [
+          "Fleet Electrification Readiness"
+        ],
+        "summary": "Get Vehicle Readiness",
+        "description": "Get detailed EV replacement feasibility for a specific fleet vehicle.",
+        "operationId": "get_vehicle_readiness_api_v1_fleet_vehicle__vehicle_id__get",
+        "parameters": [
+          {
+            "name": "vehicle_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Vehicle Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FleetVehicleReadiness"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fleet/predict": {
+      "post": {
+        "tags": [
+          "Fleet Electrification Readiness"
+        ],
+        "summary": "Predict Fleet Readiness",
+        "description": "Predict EV readiness score and transition category for any vehicle given its\nmechanical and operational telemetry.",
+        "operationId": "predict_fleet_readiness_api_v1_fleet_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FleetPredictInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FleetPredictOutput"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/battery/predict": {
+      "post": {
+        "tags": [
+          "Battery APM"
+        ],
+        "summary": "Predict Battery Health",
+        "description": "Predict State of Health (SOH) and Remaining Useful Life (RUL) of an EV battery\nbased on incoming cell telemetry metrics (Voltage, Cycle Number, Temp, Capacity).",
+        "operationId": "predict_battery_health_api_v1_battery_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatteryTelemetryInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatteryPredictionOutput"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/battery/rul": {
+      "post": {
+        "tags": [
+          "Battery APM"
+        ],
+        "summary": "Predict Battery Rul",
+        "description": "Predict Remaining Useful Life (RUL) only, using State of Health as input feature.",
+        "operationId": "predict_battery_rul_api_v1_battery_rul_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatteryRULInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatteryRULOutput"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/battery/health/{battery_id}": {
+      "get": {
+        "tags": [
+          "Battery APM"
+        ],
+        "summary": "Get Battery Health By Id",
+        "description": "Lookup a battery by ID in the database/dataset, extract the latest cycle telemetry,\nand predict SOH and RUL.",
+        "operationId": "get_battery_health_by_id_api_v1_battery_health__battery_id__get",
+        "parameters": [
+          {
+            "name": "battery_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Battery Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatteryPredictionOutput"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/carbon/metrics": {
+      "get": {
+        "tags": [
+          "Carbon Intelligence Tracker"
+        ],
+        "summary": "Get Carbon Metrics",
+        "description": "Fetch cumulative carbon emissions, simulated EV offset projections,\nand fleet progress toward net-zero targets from fleet carbon data.",
+        "operationId": "get_carbon_metrics_api_v1_carbon_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarbonFootprintOutput"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/carbon/analysis": {
+      "post": {
+        "tags": [
+          "Carbon Intelligence Tracker"
+        ],
+        "summary": "Analyze Vehicle Carbon",
+        "description": "Perform a comparative carbon emissions analysis for a specific vehicle (baseline vs EV scenario)\nover a custom annual distance and fuel type.",
+        "operationId": "analyze_vehicle_carbon_api_v1_carbon_analysis_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CarbonAnalysisInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarbonAnalysisOutput"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chat/query": {
+      "post": {
+        "tags": [
+          "AI Fleet Advisor"
+        ],
+        "summary": "Query Fleet Advisor",
+        "description": "Query the AI Fleet Advisor to get insights about battery telemetry, \nreadiness schedules, or carbon calculations.",
+        "operationId": "query_fleet_advisor_api_v1_chat_query_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatQueryInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatQueryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/health": {
+      "get": {
+        "tags": [
+          "System Diagnostics"
+        ],
+        "summary": "Get System Health",
+        "description": "Detailed system health status including uptime, ML model load state,\nand dataset availability diagnostics.",
+        "operationId": "get_system_health_api_v1_system_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemHealthOutput"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/info": {
+      "get": {
+        "tags": [
+          "System Diagnostics"
+        ],
+        "summary": "Get System Info",
+        "description": "Get backend version, environment variables, operating system platform,\nand Python engine configurations.",
+        "operationId": "get_system_info_api_v1_system_info_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/models/registry": {
+      "get": {
+        "tags": [
+          "Model Registry"
+        ],
+        "summary": "Get Model Registry",
+        "description": "Fetch the list of all registered models, their metadata, feature schemas,\nand latest performance evaluation metrics.",
+        "operationId": "get_model_registry_api_v1_models_registry_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelRegistryOutput"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/models/{model_id}": {
+      "get": {
+        "tags": [
+          "Model Registry"
+        ],
+        "summary": "Get Model Details",
+        "description": "Fetch extensive metadata, training parameters, and metrics for a specific model ID.",
+        "operationId": "get_model_details_api_v1_models__model_id__get",
+        "parameters": [
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelInfoOutput"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "Root endpoint serving application metadata.",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint for container probes and status monitoring.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BatteryPredictionOutput": {
+        "properties": {
+          "battery_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Battery Id",
+            "description": "Identifier of the battery"
+          },
+          "state_of_health": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "State Of Health",
+            "description": "Predicted State of Health (SOH) index [0-1]"
+          },
+          "remaining_useful_life_cycles": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Remaining Useful Life Cycles",
+            "description": "Estimated remaining useful cycles before retirement"
+          },
+          "health_zone": {
+            "type": "string",
+            "title": "Health Zone",
+            "description": "Categorized health zone (Healthy, Attention Required, Critical Failure Danger)"
+          },
+          "soh_model_used": {
+            "type": "string",
+            "title": "Soh Model Used",
+            "description": "Source of SOH model prediction (trained/fallback_math)"
+          },
+          "rul_model_used": {
+            "type": "string",
+            "title": "Rul Model Used",
+            "description": "Source of RUL model prediction (trained/fallback_math)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state_of_health",
+          "remaining_useful_life_cycles",
+          "health_zone",
+          "soh_model_used",
+          "rul_model_used"
+        ],
+        "title": "BatteryPredictionOutput"
+      },
+      "BatteryRULInput": {
+        "properties": {
+          "cycle_number": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Cycle Number",
+            "description": "Current charge/discharge cycle count"
+          },
+          "voltage_v": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Voltage V",
+            "description": "Measured terminal voltage in volts"
+          },
+          "temperature_c": {
+            "type": "number",
+            "title": "Temperature C",
+            "description": "Core cell temperature in Celsius"
+          },
+          "capacity_ah": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Capacity Ah",
+            "description": "Measured cell capacity in Ampere-hours"
+          },
+          "voltage_sag_v": {
+            "type": "number",
+            "title": "Voltage Sag V",
+            "description": "Measured voltage sag under load in volts",
+            "default": 0.0
+          },
+          "degradation_rate": {
+            "type": "number",
+            "title": "Degradation Rate",
+            "description": "Calculated rate of degradation",
+            "default": 0.0
+          },
+          "cycle_normalized": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cycle Normalized",
+            "description": "Normalized cycle index"
+          },
+          "state_of_health": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "State Of Health",
+            "description": "Estimated or calculated SOH"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cycle_number",
+          "voltage_v",
+          "temperature_c",
+          "capacity_ah",
+          "state_of_health"
+        ],
+        "title": "BatteryRULInput",
+        "example": {
+          "capacity_ah": 1.6,
+          "cycle_normalized": 0.35,
+          "cycle_number": 60,
+          "degradation_rate": -0.003,
+          "state_of_health": 0.88,
+          "temperature_c": 28.0,
+          "voltage_sag_v": 0.04,
+          "voltage_v": 3.5
+        }
+      },
+      "BatteryRULOutput": {
+        "properties": {
+          "remaining_useful_life_cycles": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Remaining Useful Life Cycles",
+            "description": "Estimated remaining cycles before retirement"
+          },
+          "rul_model_used": {
+            "type": "string",
+            "title": "Rul Model Used",
+            "description": "Source of model prediction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "remaining_useful_life_cycles",
+          "rul_model_used"
+        ],
+        "title": "BatteryRULOutput"
+      },
+      "BatteryTelemetryInput": {
+        "properties": {
+          "cycle_number": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Cycle Number",
+            "description": "Current charge/discharge cycle count"
+          },
+          "voltage_v": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Voltage V",
+            "description": "Measured terminal voltage in volts"
+          },
+          "temperature_c": {
+            "type": "number",
+            "title": "Temperature C",
+            "description": "Core cell temperature in Celsius"
+          },
+          "capacity_ah": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Capacity Ah",
+            "description": "Measured cell capacity in Ampere-hours"
+          },
+          "voltage_sag_v": {
+            "type": "number",
+            "title": "Voltage Sag V",
+            "description": "Measured voltage sag under load in volts",
+            "default": 0.0
+          },
+          "degradation_rate": {
+            "type": "number",
+            "title": "Degradation Rate",
+            "description": "Calculated rate of degradation",
+            "default": 0.0
+          },
+          "cycle_normalized": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cycle Normalized",
+            "description": "Normalized cycle index (cycle/max_cycles)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cycle_number",
+          "voltage_v",
+          "temperature_c",
+          "capacity_ah"
+        ],
+        "title": "BatteryTelemetryInput",
+        "example": {
+          "capacity_ah": 1.75,
+          "cycle_normalized": 0.3,
+          "cycle_number": 50,
+          "degradation_rate": -0.002,
+          "temperature_c": 32.5,
+          "voltage_sag_v": 0.03,
+          "voltage_v": 3.65
+        }
+      },
+      "CarbonAnalysisInput": {
+        "properties": {
+          "vehicle_id": {
+            "type": "string",
+            "title": "Vehicle Id",
+            "description": "Vehicle ID to evaluate"
+          },
+          "annual_distance_km": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Annual Distance Km",
+            "description": "Annual distance travelled in km"
+          },
+          "fuel_type": {
+            "type": "string",
+            "title": "Fuel Type",
+            "description": "Fuel type (Diesel/Petrol/CNG)",
+            "default": "Diesel"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vehicle_id",
+          "annual_distance_km"
+        ],
+        "title": "CarbonAnalysisInput",
+        "example": {
+          "annual_distance_km": 15000.0,
+          "fuel_type": "Diesel",
+          "vehicle_id": "VH-0013"
+        }
+      },
+      "CarbonAnalysisOutput": {
+        "properties": {
+          "vehicle_id": {
+            "type": "string",
+            "title": "Vehicle Id",
+            "description": "Vehicle ID analyzed"
+          },
+          "baseline_annual_co2_kg": {
+            "type": "number",
+            "title": "Baseline Annual Co2 Kg",
+            "description": "Estimated ICE baseline CO2 emissions per year"
+          },
+          "ev_projected_co2_kg": {
+            "type": "number",
+            "title": "Ev Projected Co2 Kg",
+            "description": "Projected grid/EV charging emissions per year"
+          },
+          "net_annual_savings_kg": {
+            "type": "number",
+            "title": "Net Annual Savings Kg",
+            "description": "Net annual saved carbon in kg"
+          },
+          "savings_percentage": {
+            "type": "number",
+            "title": "Savings Percentage",
+            "description": "Emissions reduction efficiency percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vehicle_id",
+          "baseline_annual_co2_kg",
+          "ev_projected_co2_kg",
+          "net_annual_savings_kg",
+          "savings_percentage"
+        ],
+        "title": "CarbonAnalysisOutput"
+      },
+      "CarbonFootprintOutput": {
+        "properties": {
+          "baseline_co2_kg": {
+            "type": "number",
+            "title": "Baseline Co2 Kg",
+            "description": "Total annual baseline ICE emissions"
+          },
+          "ev_scenario_co2_kg": {
+            "type": "number",
+            "title": "Ev Scenario Co2 Kg",
+            "description": "Target annual emissions with selected EV replacement"
+          },
+          "annual_savings_kg": {
+            "type": "number",
+            "title": "Annual Savings Kg",
+            "description": "Avoided carbon emissions in kg"
+          },
+          "carbon_intensity_reduction_pct": {
+            "type": "number",
+            "title": "Carbon Intensity Reduction Pct",
+            "description": "Percentage drop in carbon intensity index"
+          },
+          "net_zero_progress_pct": {
+            "type": "number",
+            "title": "Net Zero Progress Pct",
+            "description": "Current fleet progress toward target net-zero percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "baseline_co2_kg",
+          "ev_scenario_co2_kg",
+          "annual_savings_kg",
+          "carbon_intensity_reduction_pct",
+          "net_zero_progress_pct"
+        ],
+        "title": "CarbonFootprintOutput"
+      },
+      "ChatQueryInput": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "User query relating to fleet performance, battery health, or carbon indices"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Optional telemetry parameters to enhance prompt context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ChatQueryInput"
+      },
+      "ChatQueryResponse": {
+        "properties": {
+          "response": {
+            "type": "string",
+            "title": "Response",
+            "description": "Generated markdown answer from the AI fleet advisor"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources",
+            "description": "Referenced datasets or telemetry records",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "response"
+        ],
+        "title": "ChatQueryResponse"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Detailed description of the error"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id",
+            "description": "Unique UUID associated with the request log"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorResponse",
+        "example": {
+          "detail": "Requested resource was not found.",
+          "request_id": "8f8c7b8c-5544-4321-9abc-def012345678"
+        }
+      },
+      "FleetPredictInput": {
+        "properties": {
+          "vehicle_age_years": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Vehicle Age Years",
+            "description": "Age of vehicle in years"
+          },
+          "usage_hours": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Usage Hours",
+            "description": "Total engine/usage hours"
+          },
+          "fuel_consumption": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Fuel Consumption",
+            "description": "Fuel consumption rate (L/100km)"
+          },
+          "health_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Health Score",
+            "description": "Vehicle health index"
+          },
+          "load_capacity": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Load Capacity",
+            "description": "Max load capacity in kg",
+            "default": 5000.0
+          },
+          "actual_load": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Actual Load",
+            "description": "Typical load carried in kg",
+            "default": 2500.0
+          },
+          "load_utilization_pct": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Load Utilization Pct",
+            "description": "Load capacity utilisation %",
+            "default": 50.0
+          },
+          "fuel_per_hour": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Fuel Per Hour",
+            "description": "Fuel burned per hour",
+            "default": 1.5
+          },
+          "maintenance_cost": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Maintenance Cost",
+            "description": "Annual maintenance cost in USD",
+            "default": 1000.0
+          },
+          "days_since_last_maintenance": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Days Since Last Maintenance",
+            "description": "Days since last service",
+            "default": 30
+          },
+          "failure_history": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Failure History",
+            "description": "Count of historical mechanical failures",
+            "default": 0
+          },
+          "anomalies_detected": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Anomalies Detected",
+            "description": "Sensor anomalous flag counts",
+            "default": 0
+          },
+          "diagnostic_trouble_code_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Diagnostic Trouble Code Count",
+            "description": "Active trouble codes count",
+            "default": 0
+          },
+          "predictive_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Predictive Score",
+            "description": "Maintenance predictive score",
+            "default": 0.5
+          },
+          "pcr": {
+            "type": "number",
+            "title": "Pcr",
+            "description": "Performance Cost Ratio",
+            "default": 0.5
+          },
+          "uir": {
+            "type": "number",
+            "title": "Uir",
+            "description": "Utilisation Idle Ratio",
+            "default": 0.5
+          },
+          "tpi": {
+            "type": "number",
+            "title": "Tpi",
+            "description": "Total Performance Index",
+            "default": 0.5
+          },
+          "mbf": {
+            "type": "number",
+            "title": "Mbf",
+            "description": "Mean time between failures",
+            "default": 300.0
+          },
+          "ads": {
+            "type": "number",
+            "title": "Ads",
+            "description": "Average Downtime Score",
+            "default": 5.0
+          },
+          "ohi": {
+            "type": "number",
+            "title": "Ohi",
+            "description": "Overall Health Index",
+            "default": 80.0
+          },
+          "cmes": {
+            "type": "number",
+            "title": "Cmes",
+            "description": "Cumulative Maintenance Effort Score",
+            "default": 1000.0
+          },
+          "uer": {
+            "type": "number",
+            "title": "Uer",
+            "description": "Utilisation Efficiency Ratio",
+            "default": 0.5
+          },
+          "vehicle_type": {
+            "type": "string",
+            "title": "Vehicle Type",
+            "description": "Vehicle subclass type",
+            "default": "Light Truck"
+          },
+          "route_info": {
+            "type": "string",
+            "title": "Route Info",
+            "description": "Primary route info",
+            "default": "Urban Delivery"
+          },
+          "road_conditions": {
+            "type": "string",
+            "title": "Road Conditions",
+            "description": "Typical road condition",
+            "default": "Smooth"
+          },
+          "weather_conditions": {
+            "type": "string",
+            "title": "Weather Conditions",
+            "description": "Typical weather condition",
+            "default": "Clear"
+          },
+          "brake_condition": {
+            "type": "string",
+            "title": "Brake Condition",
+            "description": "Brake pad health category",
+            "default": "Good"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vehicle_age_years",
+          "usage_hours",
+          "fuel_consumption",
+          "health_score"
+        ],
+        "title": "FleetPredictInput",
+        "example": {
+          "actual_load": 3000.0,
+          "ads": 3.5,
+          "anomalies_detected": 1,
+          "brake_condition": "Good",
+          "cmes": 1500.0,
+          "days_since_last_maintenance": 45,
+          "diagnostic_trouble_code_count": 0,
+          "failure_history": 2,
+          "fuel_consumption": 10.5,
+          "fuel_per_hour": 1.25,
+          "health_score": 80.0,
+          "load_capacity": 5000.0,
+          "load_utilization_pct": 60.0,
+          "maintenance_cost": 1200.0,
+          "mbf": 250.0,
+          "ohi": 85.0,
+          "pcr": 0.55,
+          "predictive_score": 0.85,
+          "road_conditions": "Smooth",
+          "route_info": "Urban Delivery",
+          "tpi": 0.7,
+          "uer": 0.75,
+          "uir": 0.6,
+          "usage_hours": 8000.0,
+          "vehicle_age_years": 8,
+          "vehicle_type": "Light Truck",
+          "weather_conditions": "Clear"
+        }
+      },
+      "FleetPredictOutput": {
+        "properties": {
+          "ev_readiness_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Ev Readiness Score",
+            "description": "Suitability score"
+          },
+          "readiness_category": {
+            "type": "string",
+            "title": "Readiness Category",
+            "description": "Suitability category"
+          },
+          "model_used": {
+            "type": "string",
+            "title": "Model Used",
+            "description": "Algorithm used for prediction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ev_readiness_score",
+          "readiness_category",
+          "model_used"
+        ],
+        "title": "FleetPredictOutput"
+      },
+      "FleetSummaryOutput": {
+        "properties": {
+          "total_vehicles": {
+            "type": "integer",
+            "title": "Total Vehicles",
+            "description": "Total active vehicles analyzed in fleet"
+          },
+          "high_readiness_count": {
+            "type": "integer",
+            "title": "High Readiness Count",
+            "description": "Vehicles with score >= 0.6"
+          },
+          "medium_readiness_count": {
+            "type": "integer",
+            "title": "Medium Readiness Count",
+            "description": "Vehicles with score between 0.4 and 0.6"
+          },
+          "low_readiness_count": {
+            "type": "integer",
+            "title": "Low Readiness Count",
+            "description": "Vehicles with score < 0.4"
+          },
+          "readiness_percentage": {
+            "type": "number",
+            "title": "Readiness Percentage",
+            "description": "Percentage of vehicles eligible for transition"
+          },
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/FleetVehicleReadiness"
+            },
+            "type": "array",
+            "title": "Recommendations",
+            "description": "Sample high-readiness recommendations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_vehicles",
+          "high_readiness_count",
+          "medium_readiness_count",
+          "low_readiness_count",
+          "readiness_percentage",
+          "recommendations"
+        ],
+        "title": "FleetSummaryOutput"
+      },
+      "FleetVehicleReadiness": {
+        "properties": {
+          "vehicle_id": {
+            "type": "string",
+            "title": "Vehicle Id",
+            "description": "Vehicle unique identifier"
+          },
+          "vehicle_type": {
+            "type": "string",
+            "title": "Vehicle Type",
+            "description": "Type/class of the vehicle"
+          },
+          "ev_readiness_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Ev Readiness Score",
+            "description": "Electrification suitability index [0-1]"
+          },
+          "readiness_category": {
+            "type": "string",
+            "title": "Readiness Category",
+            "description": "Categorized suitability status (e.g. High Readiness)"
+          },
+          "recommended_ev_replacement": {
+            "type": "string",
+            "title": "Recommended Ev Replacement",
+            "description": "Suggested electric model replacement"
+          },
+          "estimated_cost_usd": {
+            "type": "number",
+            "title": "Estimated Cost Usd",
+            "description": "Estimated vehicle acquisition cost in USD"
+          },
+          "lead_time_months": {
+            "type": "integer",
+            "title": "Lead Time Months",
+            "description": "Delivery lead time in months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vehicle_id",
+          "vehicle_type",
+          "ev_readiness_score",
+          "readiness_category",
+          "recommended_ev_replacement",
+          "estimated_cost_usd",
+          "lead_time_months"
+        ],
+        "title": "FleetVehicleReadiness"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ModelInfoOutput": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id",
+            "description": "Unique model registry identifier"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Version of the trained model"
+          },
+          "algorithm": {
+            "type": "string",
+            "title": "Algorithm",
+            "description": "Underlying ML algorithm name"
+          },
+          "training_timestamp": {
+            "type": "string",
+            "title": "Training Timestamp",
+            "description": "ISO 8601 timestamp of model training completion"
+          },
+          "selected_features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Features",
+            "description": "List of features input into model pipeline"
+          },
+          "metrics": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metrics",
+            "description": "Performance evaluation metrics summary"
+          },
+          "metadata_path": {
+            "type": "string",
+            "title": "Metadata Path",
+            "description": "Path to model metadata file"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "version",
+          "algorithm",
+          "training_timestamp",
+          "selected_features",
+          "metrics",
+          "metadata_path"
+        ],
+        "title": "ModelInfoOutput"
+      },
+      "ModelRegistryOutput": {
+        "properties": {
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelInfoOutput"
+            },
+            "type": "array",
+            "title": "Models",
+            "description": "List of all registered models"
+          }
+        },
+        "type": "object",
+        "required": [
+          "models"
+        ],
+        "title": "ModelRegistryOutput"
+      },
+      "SystemHealthOutput": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Overall status of the backend API"
+          },
+          "uptime_seconds": {
+            "type": "number",
+            "title": "Uptime Seconds",
+            "description": "Seconds since server process started"
+          },
+          "model_load_status": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Model Load Status",
+            "description": "Mapping of model identifier to loaded status"
+          },
+          "dataset_status": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Dataset Status",
+            "description": "Mapping of dataset names to file availability status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "uptime_seconds",
+          "model_load_status",
+          "dataset_status"
+        ],
+        "title": "SystemHealthOutput"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

@@ -1,0 +1,214 @@
+{
+  "model_name": "fleet_readiness_model",
+  "model_version": "2.0.0",
+  "algorithm": "LinearRegression",
+  "training_timestamp": "2026-07-14T18:34:31.386761+00:00",
+  "random_seed": 42,
+  "target": "EV_Readiness_Score",
+  "selected_numeric_features": [
+    "Vehicle_Age_Years",
+    "Usage_Hours",
+    "Load_Capacity",
+    "Actual_Load",
+    "Load_Utilization_Pct",
+    "Fuel_Consumption",
+    "Fuel_per_Hour",
+    "Health_Score",
+    "Maintenance_Cost",
+    "Days_Since_Last_Maintenance",
+    "Failure_History",
+    "Anomalies_Detected",
+    "Diagnostic_Trouble_Code_Count",
+    "Predictive_Score",
+    "PCR",
+    "UIR",
+    "TPI",
+    "MBF",
+    "ADS",
+    "OHI",
+    "CMES",
+    "UER"
+  ],
+  "selected_categorical_features": [
+    "Vehicle_Type",
+    "Route_Info",
+    "Road_Conditions",
+    "Weather_Conditions",
+    "Brake_Condition"
+  ],
+  "n_features_total": 27,
+  "leakage_analysis": {
+    "target": "EV_Readiness_Score",
+    "n_candidates": 22,
+    "n_safe": 22,
+    "n_excluded_total": 0,
+    "safe_features": [
+      "Vehicle_Age_Years",
+      "Usage_Hours",
+      "Load_Capacity",
+      "Actual_Load",
+      "Load_Utilization_Pct",
+      "Fuel_Consumption",
+      "Fuel_per_Hour",
+      "Health_Score",
+      "Maintenance_Cost",
+      "Days_Since_Last_Maintenance",
+      "Failure_History",
+      "Anomalies_Detected",
+      "Diagnostic_Trouble_Code_Count",
+      "Predictive_Score",
+      "PCR",
+      "UIR",
+      "TPI",
+      "MBF",
+      "ADS",
+      "OHI",
+      "CMES",
+      "UER"
+    ],
+    "confirmed_leakage": [],
+    "high_correlation_risk": [],
+    "moderate_correlation": [],
+    "correlations": {
+      "Vehicle_Age_Years": 0.526319,
+      "Usage_Hours": 0.523737,
+      "Load_Capacity": 0.001374,
+      "Actual_Load": 0.20258,
+      "Load_Utilization_Pct": 0.603863,
+      "Fuel_Consumption": 0.763546,
+      "Fuel_per_Hour": -0.129799,
+      "Health_Score": -0.801995,
+      "Maintenance_Cost": 0.821527,
+      "Days_Since_Last_Maintenance": 0.766415,
+      "Failure_History": 0.619609,
+      "Anomalies_Detected": 0.688458,
+      "Diagnostic_Trouble_Code_Count": 0.664673,
+      "Predictive_Score": 0.799131,
+      "PCR": 0.603863,
+      "UIR": 0.358649,
+      "TPI": 0.728382,
+      "MBF": 0.790894,
+      "ADS": 0.751277,
+      "OHI": 0.796777,
+      "CMES": 0.795007,
+      "UER": -0.100589
+    },
+    "high_corr_threshold": 0.98,
+    "moderate_corr_threshold": 0.9
+  },
+  "preprocessing_pipeline": {
+    "steps": [
+      {
+        "name": "DataCleaner",
+        "phase": 1,
+        "desc": "Phase 1 cleaning"
+      },
+      {
+        "name": "FeatureEngineer",
+        "phase": 1,
+        "desc": "Phase 1 feature engineering"
+      },
+      {
+        "name": "StandardScaler",
+        "phase": 2,
+        "desc": "Numeric scaling in Pipeline"
+      },
+      {
+        "name": "OneHotEncoder",
+        "phase": 2,
+        "desc": "Categorical OHE in Pipeline"
+      }
+    ],
+    "full_pipeline_saved": true,
+    "model_path": "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\saved_models\\fleet\\fleet_readiness_model.pkl"
+  },
+  "split_strategy": "stratified_random_by_vehicle_type",
+  "train_rows": 175000,
+  "val_rows": 37500,
+  "test_rows": 37500,
+  "evaluation_metrics": {
+    "model": "LinearRegression",
+    "target": "EV_Readiness_Score",
+    "val_mae": 0.00017,
+    "val_rmse": 0.00098,
+    "val_r2": 0.99991,
+    "test_mae": 0.00017,
+    "test_rmse": 0.00102,
+    "test_r2": 0.9999,
+    "cv_mae_mean": 0.00018,
+    "cv_mae_std": 1e-05,
+    "cv_folds": 5,
+    "train_time_s": 1.3
+  },
+  "all_candidates": [
+    {
+      "model": "LinearRegression",
+      "target": "EV_Readiness_Score",
+      "val_mae": 0.00017,
+      "val_rmse": 0.00098,
+      "val_r2": 0.99991,
+      "test_mae": 0.00017,
+      "test_rmse": 0.00102,
+      "test_r2": 0.9999,
+      "cv_mae_mean": 0.00018,
+      "cv_mae_std": 1e-05,
+      "cv_folds": 5,
+      "train_time_s": 1.3
+    },
+    {
+      "model": "RandomForest",
+      "target": "EV_Readiness_Score",
+      "val_mae": 0.00168,
+      "val_rmse": 0.00299,
+      "val_r2": 0.99916,
+      "test_mae": 0.00167,
+      "test_rmse": 0.00304,
+      "test_r2": 0.99912,
+      "cv_mae_mean": 0.00274,
+      "cv_mae_std": 3e-05,
+      "cv_folds": 5,
+      "train_time_s": 152.91
+    },
+    {
+      "model": "GradientBoosting",
+      "target": "EV_Readiness_Score",
+      "val_mae": 0.00155,
+      "val_rmse": 0.00219,
+      "val_r2": 0.99955,
+      "test_mae": 0.00154,
+      "test_rmse": 0.00218,
+      "test_r2": 0.99955,
+      "cv_mae_mean": 0.00181,
+      "cv_mae_std": 2e-05,
+      "cv_folds": 5,
+      "train_time_s": 663.35
+    }
+  ],
+  "top20_feature_importances": {},
+  "evaluation_plots": [
+    "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\reports\\ml\\plots\\fleet_linearregression_ev_readiness_score_pred_vs_actual.png",
+    "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\reports\\ml\\plots\\fleet_linearregression_ev_readiness_score_residuals.png",
+    "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\reports\\ml\\plots\\fleet_linearregression_ev_readiness_score_error_dist.png",
+    "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\reports\\ml\\plots\\fleet_linearregression_ev_readiness_score_worst_predictions.png"
+  ],
+  "dataset_version": {
+    "source": "datasets/fleet/fleet_electrification_readiness.csv",
+    "rows": 250000,
+    "cols": 58
+  },
+  "training_time_s": 1124.23,
+  "model_path": "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\saved_models\\fleet\\fleet_readiness_model.pkl",
+  "meta_path": "C:\\Users\\pati7\\Desktop\\AI for Industrial EV Supply Chain & Asset Intelligence\\VoltIQ\\saved_models\\fleet\\fleet_readiness_metadata.json",
+  "target_audit": {
+    "verdict": "NO_LEAKAGE",
+    "audit_date": "2026-07-15",
+    "finding": "EV_Readiness_Score is a deterministic composite business index constructed as a weighted linear combination of the 22 input feature columns. R2=0.9999 is expected and correct for a model that approximates a deterministic scoring formula. No features were removed.",
+    "evidence": {
+      "r2_composite_cols_only": 0.9732,
+      "r2_all_model_features": 0.9999,
+      "max_single_feature_correlation": 0.822,
+      "test": "LinearRegression on raw dataset (no Phase 1 preprocessing)"
+    },
+    "audit_document": "docs/model_cards/fleet_readiness_target_audit.md"
+  }
+}

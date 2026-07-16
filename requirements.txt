@@ -1,0 +1,42 @@
+# Data Analysis and Visualization
+pandas
+numpy
+matplotlib
+plotly
+
+# Frontend Web Interface
+streamlit
+folium
+streamlit-folium
+
+# Web APIs and Servers
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+requests
+
+# Machine Learning
+scikit-learn
+joblib
+
+# Geospatial Analysis
+geopandas
+
+# AI Agent Framework
+langchain
+langchain-openai
+openai
+
+# Database and Storage
+sqlalchemy
+sqlite-utils
+
+# Utilities
+python-dotenv
+tqdm
+
+# Development Environment
+jupyter
+notebook
+pytest
