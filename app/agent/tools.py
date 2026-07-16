@@ -41,7 +41,7 @@ class CarbonSavingsInput(BaseModel):
     annual_distance_km: float = Field(..., ge=0.0, description="Annual distance traveled in km")
     fuel_type: str = Field(..., description="Current fuel type (Diesel/Petrol/CNG)")
 
-@tool
+@tool(args_schema=EmptyInput)
 def get_fleet_summary_metrics() -> str:
     """
     Get the overall fleet electrification readiness statistics, including total vehicle count,
@@ -70,15 +70,16 @@ def get_fleet_summary_metrics() -> str:
         logger.error(f"Error in get_fleet_summary_metrics tool: {str(e)}", exc_info=True)
         return json.dumps({"error": f"Failed to compute fleet summary: {str(e)}"})
 
-@tool
+@tool(args_schema=VehicleSearchInput)
 def search_vehicle_feasibility(vehicle_id: str) -> str:
     """
-    Look up a specific vehicle by its ID in the fleet electrification database to retrieve its readiness score,
-    transition category, recommended EV replacement model, estimated cost, and delivery lead time.
+    Look up a specific vehicle by its ID, run the trained Fleet Readiness model live on its
+    telemetry to get a fresh readiness score, and retrieve transition category, recommended
+    EV replacement model, estimated cost, and delivery lead time.
     """
     try:
         df = data_loader.load("fleet_readiness")
-        
+
         normalized_id = vehicle_id
         if vehicle_id.upper().startswith("VH-"):
             digits = "".join([c for c in vehicle_id if c.isdigit()])
@@ -91,55 +92,68 @@ def search_vehicle_feasibility(vehicle_id: str) -> str:
                 pass
 
         match = df[
-            (df["Vehicle_ID"] == normalized_id) | 
+            (df["Vehicle_ID"] == normalized_id) |
             (df["Vehicle_ID"].astype(str) == str(vehicle_id))
         ]
-        
+
         if match.empty:
             return json.dumps({"error": f"Vehicle ID '{vehicle_id}' not found in registry database."})
-            
+
         row = match.iloc[0]
-        score = float(row["EV_Readiness_Score"])
         v_type = str(row.get("Vehicle_Type", "Van"))
-        
-        if score >= 0.6:
-            cat = "High Readiness"
-        elif score >= 0.4:
-            cat = "Moderate Readiness"
-        else:
-            cat = "Low Readiness"
-            
+
+        # Build payload from the model's expected schema, not hardcoded fields
+        schema = model_service.get_fleet_feature_schema()
+        payload_dict: Dict[str, Any] = {}
+        missing_features: List[str] = []
+
+        for feat in schema["numeric"] + schema["categorical"]:
+            if feat in row and pd.notna(row[feat]):
+                payload_dict[feat] = row[feat]
+            else:
+                missing_features.append(feat)
+
+        if not payload_dict:
+            return json.dumps({
+                "error": f"No usable features found for vehicle '{vehicle_id}' to run live inference."
+            })
+
+        # Actual live inference — score/cat/model_used come from the model now
+        score, cat, model_used = model_service.predict_fleet_readiness(payload_dict)
+
         if "truck" in v_type.lower():
-            repl = "Rivian EDV"
-            cost = 72000.0
-            lead = 5
+            repl, cost, lead = "Rivian EDV", 72000.0, 5
         elif "van" in v_type.lower():
-            repl = "Ford E-Transit"
-            cost = 45000.0
-            lead = 3
+            repl, cost, lead = "Ford E-Transit", 45000.0, 3
         else:
-            repl = "Tata Ace EV"
-            cost = 15000.0
-            lead = 2
-            
+            repl, cost, lead = "Tata Ace EV", 15000.0, 2
+
+        fleet_metrics = model_service.get_model_metrics("fleet_readiness_model")
+        model_label = "LinearRegression Fleet Model" if model_used == "trained" else "Fallback Math Model"
+
         result = {
             "vehicle_id": str(vehicle_id),
             "vehicle_type": v_type,
-            "ev_readiness_score": round(score, 4),
+            "ev_readiness_score": score,
             "readiness_category": cat,
             "recommended_ev_replacement": repl,
             "estimated_cost_usd": cost,
             "lead_time_months": lead,
-            "model_name": "LinearRegression Fleet Model",
-            "model_confidence_r2": 0.9999,
-            "data_source": "Fleet Dataset"
+            "model_name": model_label,
+            "model_confidence_r2": fleet_metrics.get("test_r2", "unavailable") if model_used == "trained" else "N/A (fallback used)",
+            "confidence_note": "EV_Readiness_Score is a deterministic composite index; near-perfect R² reflects the model recovering this formula, not leakage (see target audit).",
+            "data_source": "Fleet Dataset",
         }
+        if missing_features:
+            result["note"] = f"Missing features filled by model defaults: {missing_features}"
+
         return json.dumps(result)
     except Exception as e:
         logger.error(f"Error in search_vehicle_feasibility tool: {str(e)}", exc_info=True)
         return json.dumps({"error": f"Failed to retrieve vehicle data: {str(e)}"})
 
-@tool
+        
+@tool(args_schema=BatterySearchInput)
 def analyze_battery_health(battery_id: str) -> str:
     """
     Get current State of Health (SOH), Remaining Useful Life (RUL) in cycles, and overall health status category
@@ -207,7 +221,7 @@ def analyze_battery_health(battery_id: str) -> str:
         logger.error(f"Error in analyze_battery_health tool: {str(e)}", exc_info=True)
         return json.dumps({"error": f"Failed to analyze battery health: {str(e)}"})
 
-@tool
+@tool(args_schema=BatteryPredictInput)
 def predict_custom_battery_telemetry(
     cycle_number: int,
     voltage_v: float,
@@ -249,7 +263,7 @@ def predict_custom_battery_telemetry(
         logger.error(f"Error in predict_custom_battery_telemetry tool: {str(e)}", exc_info=True)
         return json.dumps({"error": f"Failed to predict custom battery telemetry: {str(e)}"})
 
-@tool
+@tool(args_schema=EmptyInput)
 def get_carbon_metrics_summary() -> str:
     """
     Retrieve the cumulative carbon footprint statistics for the entire fleet, including annual baseline ICE emissions,
@@ -263,7 +277,7 @@ def get_carbon_metrics_summary() -> str:
         logger.error(f"Error in get_carbon_metrics_summary tool: {str(e)}", exc_info=True)
         return json.dumps({"error": f"Failed to get carbon metrics: {str(e)}"})
 
-@tool
+@tool(args_schema=CarbonSavingsInput)
 def calculate_vehicle_carbon_savings(vehicle_id: str, annual_distance_km: float, fuel_type: str) -> str:
     """
     Compare baseline ICE emissions versus projected EV grid emissions for a specific vehicle over a given annual distance and fuel type.
@@ -280,7 +294,7 @@ def calculate_vehicle_carbon_savings(vehicle_id: str, annual_distance_km: float,
         logger.error(f"Error in calculate_vehicle_carbon_savings tool: {str(e)}", exc_info=True)
         return json.dumps({"error": f"Failed to calculate carbon savings: {str(e)}"})
 
-@tool
+@tool(args_schema=EmptyInput)
 def get_poor_charging_routes() -> str:
     """
     Retrieve fleet route details with poor charging accessibility (Charging Proximity Index is 0.0).
@@ -322,7 +336,6 @@ def get_poor_charging_routes() -> str:
         logger.error(f"Error in get_poor_charging_routes tool: {str(e)}", exc_info=True)
         return json.dumps({"error": f"Failed to analyze charging routes: {str(e)}"})
 
-# Complete list of tools
 ALL_TOOLS = [
     get_fleet_summary_metrics,
     search_vehicle_feasibility,

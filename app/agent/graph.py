@@ -1,20 +1,3 @@
-"""
-VoltIQ Fleet Advisor — LangGraph StateGraph
-
-Builds the agent graph:
-
-    START → llm_node → (has tool calls?) ─Yes→ tool_node → llm_node (loop)
-                            │
-                            No
-                            ↓
-                      extract_sources → END
-
-Nodes:
-  - llm_node:          Invokes the ChatOpenAI model with bound tools
-  - tool_node:         Executes the tool calls the LLM requested
-  - extract_sources:   Scans the final response for dataset/model attributions
-"""
-
 import logging
 from typing import Dict, Any, List, Optional, Literal
 
@@ -46,147 +29,106 @@ SYSTEM_PROMPT = (
     "- References to data should cite exact sources, such as 'Fleet Dataset', 'Battery Dataset', or 'Carbon Dataset'.\n"
     "- References to predictions must explicitly name the machine learning model used, e.g., 'LinearRegression Fleet Model' "
     "or 'GradientBoosting Battery Model'.\n"
+    "- Always use the exact model_name, data_source, and confidence values returned by the tool output — never assume "
+    "or infer a model name yourself. If a tool reports 'Fallback Math Model' or a fallback status, say so plainly and "
+    "explain that the trained model was unavailable for that specific result — do not present it as if the primary "
+    "trained model produced it.\n"
     "- When returning predictions, format them clearly with: prediction output value, confidence level/performance metric "
     "(like R2 score or MAE as reported by the tools), and the model name.\n"
-    "- Never make up vehicle IDs, SOH numbers, or carbon metrics. Only return facts returned by your tools.\n"
+    "- If a tool returns a confidence value as 'unavailable' or 'N/A', state that confidence data could not be retrieved "
+    "for that result rather than omitting it or estimating a number.\n"
+    "- If a tool includes a 'confidence_note' or similar explanatory field, incorporate it when reporting high-confidence "
+    "scores so the user understands why the metric is what it is.\n"
+    "- Never make up vehicle IDs, SOH numbers, readiness scores, or carbon metrics. Only return facts returned by your tools.\n"
     "- Maintain a professional, action-oriented, and data-centric tone.\n"
     "- Always use multiple tools if necessary to give a complete, well-rounded answer."
+    "In last Proide the summary"
 )
 
+from dotenv import load_dotenv
+load_dotenv()
 
-
-def _get_llm() -> ChatOpenAI:
-    """Create the ChatOpenAI instance with tools bound."""
-    return ChatOpenAI(
-        model=settings.openai_model_name,
-        openai_api_key=settings.openai_api_key,
-    )
-
-
+llm = ChatOpenAI(model="gpt-4o-mini", api_key=settings.openai_api_key)
+llm_with_tools = llm.bind_tools(ALL_TOOLS)
 
 
 def llm_node(state: GraphState) -> Dict[str, Any]:
-
-    llm = _get_llm()
-    llm_with_tools = llm.bind_tools(ALL_TOOLS)
-
-    messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
-
-    logger.info(f"LLM node invoked | {len(state['messages'])} messages in state")
-    ai_message = llm_with_tools.invoke(messages)
+    messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]   
+    
+   
+    try:
+        ai_message = llm_with_tools.invoke(messages)
+        logger.info(f"LLM node invoked | {len(state['messages'])} messages in state")
+    except Exception as ex:
+        logger.error(f"LLM call failed: {ex}", exc_info=True)
+        ai_message = AIMessage(content="I hit an error reaching the model — please retry.")
 
     return {"messages": [ai_message]}
 
 
 def tool_node(state: GraphState) -> Dict[str, Any]:
-    """
-    Execute the tool calls requested by the LLM.
 
-    Uses LangGraph's built-in ToolNode which:
-      - Matches tool_call names to our ALL_TOOLS list
-      - Runs them (in parallel if multiple calls)
-      - Returns ToolMessage results with correct tool_call_ids
-    """
-    # Get the last AI message which contains the tool_calls
     last_message = state["messages"][-1]
     tool_calls = getattr(last_message, "tool_calls", [])
 
-    # Track which tools are being called
     called_names = [tc["name"] for tc in tool_calls]
     logger.info(f"Tool node executing: {called_names}")
 
-    # Use LangGraph's built-in ToolNode for robust execution
     tool_executor = ToolNode(ALL_TOOLS)
     result = tool_executor.invoke(state)
-
-    # Return both the tool messages and the names of tools called
+ 
     return {
         "messages": result["messages"],
         "tool_names_called": called_names,
     }
 
 
-def extract_sources(state: GraphState) -> Dict[str, Any]:
-    """
-    Extract dataset/model source attributions from the final AI response
-    and the list of tools that were called during this run.
+import json
 
-    This node runs right before END to populate the `sources` and
-    `final_response` channels.
-    """
-    # The last message should be the final AIMessage (no tool_calls)
+def extract_sources(state: GraphState) -> Dict[str, Any]:
     final_message = state["messages"][-1]
     response_text = final_message.content
-    tool_names = state.get("tool_names_called", [])
 
-    sources: List[str] = []
-    lower = response_text.lower()
+    sources: set[str] = set()
+    
+    for msg in reversed(state["messages"]):
+        if isinstance(msg, HumanMessage):
+            break  # stop at the start of this turn
+        if isinstance(msg, ToolMessage):
+            try:
+                payload = json.loads(msg.content)
+            except (json.JSONDecodeError, TypeError):
+                continue
+            if "data_source" in payload:
+                sources.update(s.strip() for s in payload["data_source"].split(","))
+            for key in ("soh_model_used", "rul_model_used", "model_name"):
+                if key in payload:
+                    sources.add(payload[key])
 
-    # Primary: scan the LLM's response text for explicit mentions
-    if "fleet dataset" in lower:
-        sources.append("Fleet Dataset")
-    if "battery dataset" in lower:
-        sources.append("Battery Dataset")
-    if "carbon dataset" in lower:
-        sources.append("Carbon Dataset")
-    if "charging dataset" in lower:
-        sources.append("Charging Dataset")
-    if "gradientboosting battery model" in lower:
-        sources.append("GradientBoosting Battery Model")
-    if "linearregression fleet model" in lower:
-        sources.append("LinearRegression Fleet Model")
-
-    # Fallback: infer from which tools were called
-    if not sources:
-        for name in tool_names:
-            if "fleet" in name or "vehicle" in name:
-                sources.append("Fleet Dataset")
-            if "vehicle" in name:
-                sources.append("LinearRegression Fleet Model")
-            if "battery" in name:
-                sources.extend(["Battery Dataset", "GradientBoosting Battery Model"])
-            if "carbon" in name:
-                sources.append("Carbon Dataset")
-            if "route" in name or "charging" in name:
-                sources.extend(["Fleet Dataset", "Charging Dataset"])
-
-    return {
-        "sources": list(set(sources)),
-        "final_response": response_text,
-    }
+    return {"sources": sorted(sources), "final_response": response_text}
 
 
 
 def should_continue(state: GraphState) -> Literal["tool_node", "extract_sources"]:
-    """
-    After the LLM node, check if the AI wants to call tools.
-    If yes → route to tool_node. If no → route to extract_sources → END.
-    """
+
     last_message = state["messages"][-1]
     if hasattr(last_message, "tool_calls") and last_message.tool_calls:
         return "tool_node"
     return "extract_sources"
 
 def build_graph() -> StateGraph:
-    """
-    Construct and compile the VoltIQ Fleet Advisor StateGraph.
-
-    Graph topology:
-        START → llm_node → [should_continue?]
-                               ├─ tool_calls → tool_node → llm_node (loop)
-                               └─ no tools  → extract_sources → END
-    """
+    
     graph = StateGraph(GraphState)
 
-    # Register nodes
+   
     graph.add_node("llm_node", llm_node)
     graph.add_node("tool_node", tool_node)
     graph.add_node("extract_sources", extract_sources)
 
-    # Entry point
+   
     graph.add_edge(START, "llm_node")
 
-    # After LLM: decide whether to call tools or finish
+    
     graph.add_conditional_edges(
         "llm_node",
         should_continue,
@@ -219,33 +161,20 @@ def run_query(
     user_message: str,
     chat_history: Optional[List[Dict[str, str]]] = None,
 ) -> Dict[str, Any]:
-    """
-    Execute a user query through the LangGraph Fleet Advisor.
-
-    Args:
-        user_message: The user's natural-language query.
-        chat_history: Optional list of prior {"role": ..., "message": ...} dicts.
-
-    Returns:
-        {"response": str, "sources": List[str]}
-        Same shape as the old FleetAdvisorAgent.run_query() so chat.py
-        needs zero changes.
-    """
-    # Derive a stable thread_id for MemorySaver session persistence
     if chat_history:
         first_msg = chat_history[0].get("message", "")
         thread_id = f"session-{abs(hash(first_msg)) % 10 ** 8}"
     else:
         thread_id = "default-session"
 
-    config = {"configurable": {"thread_id": thread_id}}
+    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 15}
 
     logger.info(
         f"run_query | thread={thread_id} | "
         f"msg='{user_message[:80]}{'...' if len(user_message) > 80 else ''}'"
     )
 
-    # Build initial state
+ 
     initial_state = {
         "messages": [HumanMessage(content=user_message)],
         "sources": [],
@@ -253,7 +182,7 @@ def run_query(
         "final_response": "",
     }
 
-    # Invoke the compiled graph
+   
     result = fleet_graph.invoke(initial_state, config=config)
 
     return {

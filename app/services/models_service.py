@@ -216,19 +216,26 @@ class ModelService:
         return self._get_fallback_rul(cycle_number), "fallback_math"
 
     def predict_fleet_readiness(self, payload_dict: Dict[str, Any]) -> Tuple[float, str, str]:
-        """
-        Predict EV Electrification Readiness score and category for a vehicle.
-        """
         if self._fleet_model is None:
             self.load_models()
-        
+
         if self._fleet_model is not None:
             try:
-                # Construct DataFrame from payload_dict
-                # We need all the features expected by the pipeline.
-                # Features expected: 22 numeric, 5 categorical
                 input_data = pd.DataFrame([payload_dict])
-                
+
+                if self._fleet_meta:
+                    numeric_cols = self._fleet_meta.get("selected_numeric_features", [])
+                    categorical_cols = self._fleet_meta.get("selected_categorical_features", [])
+
+                    for col in numeric_cols:
+                        if col not in input_data.columns:
+                            input_data[col] = 0.0
+                    for col in categorical_cols:
+                        if col not in input_data.columns:
+                            input_data[col] = "Unknown"  # must match a category OHE was fit on, or rely on handle_unknown='ignore'
+
+                    input_data = input_data[numeric_cols + categorical_cols]
+
                 pred = self._fleet_model.predict(input_data)[0]
                 score = float(np.clip(pred, 0.0, 1.0))
                 model_used = "trained"
@@ -239,8 +246,7 @@ class ModelService:
         else:
             score = self._get_fallback_readiness(payload_dict)
             model_used = "fallback_math"
-        
-        # Categorize readiness score
+
         if score >= 0.6:
             category = "High Readiness"
         elif score >= 0.4:
@@ -249,9 +255,18 @@ class ModelService:
             category = "Low Readiness"
         else:
             category = "Not Ready"
-            
+
         return round(score, 4), category, model_used
 
+    def get_fleet_feature_schema(self) -> Dict[str, List[str]]:
+        if not self._fleet_meta:
+            return {"numeric": [], "categorical": []}
+        return {
+            "numeric": self._fleet_meta.get("selected_numeric_features", []),
+            "categorical": self._fleet_meta.get("selected_categorical_features", []),
+        }
+    
+    
     def get_registry_info(self) -> List[Dict[str, Any]]:
         """Return metadata info for all 3 models."""
         registry = []
@@ -291,6 +306,22 @@ class ModelService:
         
         return registry
 
+    def get_model_metrics(self, model_id: str) -> Dict[str, Any]:
+        """
+        Return evaluation metrics (e.g. r2, mae) for a given model_id:
+        'battery_soh_model', 'battery_rul_model', or 'fleet_readiness_model'.
+        Falls back to an empty dict if metadata wasn't loaded.
+        """
+        meta_map = {
+            "battery_soh_model": self._soh_meta,
+            "battery_rul_model": self._rul_meta,
+            "fleet_readiness_model": self._fleet_meta,
+        }
+        meta = meta_map.get(model_id)
+        if not meta:
+            return {}
+        return meta.get("evaluation_metrics", {})
+    
     def _get_fallback_soh(self, cycle_number: int, temperature_c: float) -> float:
         """Math-based fallback for SOH."""
         soh = max(0.0, 1.0 - (cycle_number * 0.0012) - (0.015 if temperature_c > 35.0 else 0.0))
